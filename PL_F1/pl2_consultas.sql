@@ -4,6 +4,7 @@
 
 
 --CONSULTA 1
+\echo "Consulta 1: Cantidad de Grandes Premios en los que se ha corrido en cada circuito en la base de datos, ordenados de mayor a menor."
 SELECT
     c.circuitRef,
     COUNT(gp.name) as numero_de_grandes_premios
