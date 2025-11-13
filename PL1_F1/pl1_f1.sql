@@ -355,33 +355,6 @@ INSERT INTO pl1_final.pit_stops_final(raceRef, driverRef, lap, year, time, durat
 
 
 
--- ======================================= Pruebas =======================================
-
-\echo "Muestra la cantidad de elementos en cada tabla"
-SELECT
-    count(*)
-    FROM
-        pl1_final.circuits_final -- Cantidad  elems circuitos
-        ;
-
-SELECT
-    count(*)
-    FROM
-        pl1_final.constructors_final -- Cantidad  elems constructores
-        ;
-
-SELECT
-    count(*)
-    FROM
-        pl1_final.drivers_final -- Cantidad  elems conductores
-        ;
-
-SELECT
-    count(*)
-    FROM
-        pl1_final.seasons_final -- Cantidad  elems temporadas
-        ;
-
-ROLLBACK; -- Para que no se guarden los datos.
+COMMIT;
 
 
