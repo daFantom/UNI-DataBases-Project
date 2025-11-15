@@ -1,4 +1,5 @@
-    BEGIN;
+\pset pager off
+BEGIN;
 
 -- ======================================= CONSULTAS =======================================
 
@@ -21,8 +22,8 @@ ORDER BY
 SELECT
         p.forename AS nombre,
         p.surname AS apellidos,
-        COUNT(r.gpRef) AS num_carreras,
-        SUM(r.puntos) AS suma_puntos
+        COUNT(r.gpRef) AS num_carreras_totales,
+        SUM(r.puntos) AS suma_puntos_totales
     FROM
         pl1_final.drivers_final AS p JOIN pl1_final.results_final AS r ON
         p.driverRef = r.pilotoRef
@@ -82,6 +83,18 @@ SELECT
     ORDER BY
         nombre_piloto ASC;
 
+-- Consulta 8
+\echo 'Consulta 8: Numero de GP por pais.'
+SELECT
+    cir.country, COUNT(gp.name)
+    FROM
+        pl1_final.races_final AS gp JOIN pl1_final.circuits_final AS cir ON
+        gp.circuitRef = cir.circuitRef
+    GROUP BY
+        cir.country
+    ORDER BY
+        COUNT(gp.name) DESC;
+
 -- CONSULTA 9
 \echo 'Consulta 9: Nombre del piloto con la vuelta mas rapida de la historia.'
 -- Tuve que mirar en una pagina de tutoriales PSQL, llamada NEON, para ver como se podia aplicar la subconsulta para el MIN()
@@ -103,5 +116,37 @@ SELECT
         nombre,
         apellidos,
         tiempo_vuelta;
+
+-- CONSULTA 10
+\echo 'Consulta 10: Numero de parades en boxes de cada piloto en el GP Monaco 2023'
+SELECT
+    p.forename AS nombre_piloto,
+    p.surname AS apellidos_piloto,
+    COUNT(ps.driverRef)
+    FROM
+        pl1_final.pit_stops_final AS ps JOIN pl1_final.drivers_final AS p ON
+        ps.driverRef = p.driverRef
+    WHERE
+        ps.raceRef = 'Monaco Grand Prix' AND ps.year = 2023
+    GROUP BY
+        nombre_piloto,
+        apellidos_piloto;
+
+-- CONSULTA 11
+\echo 'Consulta 11: Nombre de todos los pilotos que hayanm participado en mas de 100 premios, ordenados de mayor a menos.'
+SELECT
+    p.forename AS pil_nombre,
+    p.surname AS pil_apellidos,
+    COUNT(r.gpRef)
+    FROM
+        pl1_final.results_final AS r JOIN pl1_final.drivers_final AS p ON
+        r.pilotoRef = p.driverRef
+    GROUP BY
+        pil_nombre,
+        pil_apellidos
+    HAVING
+        COUNT(r.gpRef) > 100
+    ORDER BY
+        COUNT(r.gpRef) DESC; 
 
 ROLLBACK;

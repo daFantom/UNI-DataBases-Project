@@ -191,8 +191,7 @@ CREATE TABLE pl1_final.races_final(
     round          SMALLINT,
     circuitRef     TEXT, -- Proveniente de circuito (FK)
     name           TEXT, -- PK
-    date           DATE, 
-    time           TIME WITHOUT TIME ZONE,
+    datetime       TIMESTAMP,
     url            TEXT, 
     CONSTRAINT races_pk PRIMARY KEY (name, year),
     CONSTRAINT races_fk1 FOREIGN KEY (year) REFERENCES pl1_final.seasons_final (year) ON DELETE RESTRICT ON UPDATE CASCADE, -- FK proveniente de la PK de Temporada.
@@ -300,9 +299,9 @@ INSERT INTO pl1_final.seasons_final(year, url)
 
 -- ====================== CARGA EN GRANDES PREMIOS ======================
 \echo "Cargando datos en a tabla de Grandes Premios..."
-INSERT INTO pl1_final.races_final(year, round, circuitRef, name, date, time, url)
+INSERT INTO pl1_final.races_final(year, round, circuitRef, name, datetime, url)
     SELECT
-        year::SMALLINT, round::SMALLINT, circuitRef, gp_temp.name, date::DATE, time::TIME WITHOUT TIME ZONE, gp_temp.url
+        year::SMALLINT, round::SMALLINT, circuitRef, gp_temp.name, (gp_temp.date||' '||gp_temp.time)::TIMESTAMP, gp_temp.url
         FROM
             pl1_temp.races_temp AS gp_temp JOIN pl1_temp.circuits_temp AS circuito_temp ON gp_temp.circuitId = circuito_temp.circuitId;
 
