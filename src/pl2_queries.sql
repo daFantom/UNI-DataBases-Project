@@ -70,7 +70,8 @@ SELECT
 -- CONSULTA 7
 \echo 'Consulta 7: Nombre de los pilotos que han ganado almenos 1 vez.'
 SELECT
-    p.forename AS nombre_piloto 
+    p.forename AS nombre_piloto,
+    p.surname AS apellido_piloto -- Opcional, pero para no confundir con los nombres duplicados.
     FROM
         pl1_final.results_final AS r JOIN pl1_final.drivers_final AS p ON
         r.pilotoRef = p.driverRef
@@ -80,5 +81,27 @@ SELECT
         p.driverRef
     ORDER BY
         nombre_piloto ASC;
+
+-- CONSULTA 9
+\echo 'Consulta 9: Nombre del piloto con la vuelta mas rapida de la historia.'
+-- Tuve que mirar en una pagina de tutoriales PSQL, llamada NEON, para ver como se podia aplicar la subconsulta para el MIN()
+SELECT
+    p.forename AS nombre,
+    p.surname AS apellidos,
+    v.time AS tiempo_vuelta
+    FROM
+        pl1_final.drivers_final AS p JOIN pl1_final.lap_times_final AS v ON
+        p.driverRef = v.driverRef
+    WHERE
+    v.time = (
+        SELECT
+            MIN(time)
+            FROM
+            pl1_final.lap_times_final
+    )
+    GROUP BY
+        nombre,
+        apellidos,
+        tiempo_vuelta;
 
 ROLLBACK;
