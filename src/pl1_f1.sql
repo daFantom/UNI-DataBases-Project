@@ -121,16 +121,16 @@ CREATE TABLE IF NOT EXISTS pl1_temp.pit_stops_temp(
 
 \echo "Cargando datos..."
 
-\COPY pl1_temp.circuits_temp FROM './data/circuits.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.constructors_temp FROM './data/constructors.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.drivers_temp FROM './data/drivers.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.lap_times_temp FROM './data/lap_times.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.races_temp FROM './data/races.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.results_temp FROM './data/results.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.seasons_temp FROM './data/seasons.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.status_temp FROM './data/status.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.qualifying_temp FROM './data/qualifying.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
-\COPY pl1_temp.pit_stops_temp FROM './data/pit_stops.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.circuits_temp FROM '../data/circuits.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.constructors_temp FROM '../data/constructors.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.drivers_temp FROM '../data/drivers.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.lap_times_temp FROM '../data/lap_times.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.races_temp FROM '../data/races.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.results_temp FROM '../data/results.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.seasons_temp FROM '../data/seasons.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.status_temp FROM '../data/status.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.qualifying_temp FROM '../data/qualifying.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
+\COPY pl1_temp.pit_stops_temp FROM '../data/pit_stops.csv' WITH (FORMAT csv, HEADER, DELIMITER E',', NULL "\N", ENCODING "UTF-8")
 
 
 
