@@ -25,9 +25,11 @@ SELECT
         pl1_final.results_final AS r JOIN pl1_final.drivers_final AS pi ON
         r.pilotoRef = pi.driverRef
     WHERE
-        posicion = 1
+        r.posicion = 1
     GROUP BY
-        nombre_piloto;
+        nombre_piloto
+    ORDER BY
+        nombre_piloto ASC; -- OPCIONAL, para que quede bonito.
 
 
 ROLLBACK;
