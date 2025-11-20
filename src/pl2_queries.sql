@@ -135,18 +135,16 @@ SELECT
 -- CONSULTA 11
 \echo 'Consulta 11: Nombre de todos los pilotos que hayanm participado en mas de 100 premios, ordenados de mayor a menos.'
 SELECT
-    p.forename AS pil_nombre,
-    p.surname AS pil_apellidos,
-    COUNT(r.gpRef)
+    p.driverRef AS referencia_piloto,
+    COUNT(r.gpRef) AS cant_GP
     FROM
         pl1_final.results_final AS r JOIN pl1_final.drivers_final AS p ON
         r.pilotoRef = p.driverRef
     GROUP BY
-        pil_nombre,
-        pil_apellidos
+        referencia_piloto
     HAVING
         COUNT(r.gpRef) > 100
     ORDER BY
-        COUNT(r.gpRef) DESC; 
+        cant_GP DESC; 
 
 ROLLBACK;
