@@ -6,6 +6,7 @@ BEGIN;
 
 --CONSULTA 1
 \echo 'Consulta 1: Cantidad de Grandes Premios en los que se ha corrido en cada circuito en la base de datos, ordenados de mayor a menor.'
+
 SELECT
     c.name AS nombreGP,
     COUNT(gp.name) as numero_de_grandes_premios
@@ -67,7 +68,37 @@ SELECT
     ORDER BY
         nombre_escu;
 
+--CONSULTA 5
+\echo 'Consulta 5: Crear una vista con todos los pilotos que han corrido en cada temporada (1950-2024) y sus respectivos puntos en tales temporadas. '
+CREATE VIEW puntos_por_temporada AS
+SELECT
+    rf.year AS anno,
+    d.driverRef AS referencia,
+    SUM(rf.puntos) AS puntos_totales
+FROM pl1_final.results_final rf JOIN pl1_final.drivers_final d ON rf.pilotoRef = d.driverRef
+GROUP BY anno, referencia;
 
+
+    -- Muestra de datos para la consulta 5.
+SELECT 
+    *
+FROM
+    puntos_por_temporada
+ORDER BY
+    anno ASC, puntos_totales DESC;
+    
+--CONSULTA 6
+\echo 'Consulta 6: Utilizar la vista anterior para mostrar los pilotos con la mayor cantidad de puntos en las temporadas de entre 2010 y 2015, inclusive ambos. '
+SELECT
+    *
+FROM
+    puntos_por_temporada
+WHERE 
+    anno < 2016 AND anno > 2009
+ORDER BY
+    anno ASC, puntos_totales DESC;
+
+        
 -- CONSULTA 7
 \echo 'Consulta 7: Nombre de los pilotos que han ganado almenos 1 vez.'
 SELECT
