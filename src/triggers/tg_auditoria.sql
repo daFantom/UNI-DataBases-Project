@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS auditoria(
     tablename       TEXT,
     user_from       TEXT,
     date_time       TIMESTAMP,
+    trigger_from    TEXT,
     CONSTRAINT auditoria_pk PRIMARY KEY (id_aud)
 );
 
@@ -13,11 +14,11 @@ CREATE OR REPLACE FUNCTION fn_auditoria() RETURNS TRIGGER AS $fn_auditoria$
     -- nada xd
     BEGIN
         IF TG_OP='INSERT' THEN
-            INSERT INTO auditoria(event, tablename, user_from, date_time) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp);
+            INSERT INTO auditoria(event, tablename, user_from, date_time, trigger_from) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp, TG_NAME);
         ELSIF TG_OP='UPDATE' THEN
-            INSERT INTO auditoria(event, tablename, user_from, date_time) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp);
+            INSERT INTO auditoria(event, tablename, user_from, date_time, trigger_from) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp, TG_NAME);
         ELSIF TG_OP='DELETE' THEN
-            INSERT INTO auditoria(event, tablename, user_from, date_time) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp);
+            INSERT INTO auditoria(event, tablename, user_from, date_time, trigger_from) VALUES (TG_OP, TG_TABLE_NAME, current_user, current_timestamp, TG_NAME);
         END IF;
         RETURN NULL;
     END
