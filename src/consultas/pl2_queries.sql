@@ -92,11 +92,16 @@ ORDER BY
 SELECT
     *
 FROM
-    puntos_por_temporada
+    puntos_por_temporada p1
 WHERE 
     anno < 2016 AND anno > 2009
+    AND p1.puntos_totales = (
+        SELECT MAX(p2.puntos_totales)
+        FROM puntos_por_temporada p2
+        WHERE p2.anno = p1.anno
+    )
 ORDER BY
-    anno ASC, puntos_totales DESC;
+    anno ASC;
 
         
 -- CONSULTA 7
