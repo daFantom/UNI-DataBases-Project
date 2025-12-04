@@ -1,3 +1,4 @@
+\pset pager off
 CREATE TABLE IF NOT EXISTS auditoria(
     id_aud          SERIAL,
     event           TEXT,
@@ -8,7 +9,7 @@ CREATE TABLE IF NOT EXISTS auditoria(
     CONSTRAINT auditoria_pk PRIMARY KEY (id_aud)
 );
 
--- ========== FUNCIONES PARA LOS TRIGGERS  ==========
+-- ========== FUNCIONES PARA LOS TRIGGERS DE AUDITORIA  ==========
 CREATE OR REPLACE FUNCTION fn_auditoria() RETURNS TRIGGER AS $fn_auditoria$
     DECLARE
     -- nada xd
