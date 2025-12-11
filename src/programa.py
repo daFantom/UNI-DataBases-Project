@@ -1,6 +1,6 @@
 import sys
 import psycopg2
-import getpass  # Para ingresar contraseña de forma segura
+import getpass
 
 class PortException(Exception):
     """Excepción personalizada para errores de puerto"""
@@ -127,6 +127,21 @@ def display_menu():
     print("4. Salir")
     print("====================================")
 
+def display_opt1():
+    """
+    Muestra la lista de comandos
+    """
+    print("1. Lista de todos los circuitos con los GP que han albergado cada uno")
+    print("2. Grandes Premios corridos por Ayrton Senna y sus puntos totales")
+    print("3. Listado de pilotos nacidos a partir del año 2000 junto con las carreras en las que han participado")
+    print("4. Todas las escuderías españolas e italianas junto con los GP corridos por cada una")
+    print("5. Listado de Temporadas con sus pilotos y los puntos que han obtenido en la misma")
+    print("6. Listado de pilotos ganadores de la temporada 2010 a 2015")
+    print("7. Todos los pilotos que han ganado un GP")
+    print("8. Ranking de GPs por país")
+    print("9. Piloto con la vuelta más rápida de la historia")
+    print("10. Listado de pilotos ordenada por el número de paradas en boxes en el GP de Monaco 2023")
+    print("11. Listado de pilotos que participaron en más de 100 GPs")
 
 def get_user_choice():
     """
@@ -186,26 +201,24 @@ def main():
         while True:
             display_menu()
             choice = get_user_choice()
+            match choice:
+                case 1:
+                    display_opt1()
+                    choice = get_user_choice()
             
-            if choice == 1:
-                print("1")
+                case 2:
+                    print("2")
             
-            elif choice == 2:
-                print("2")
+                case 3:
+                    # Probar permisos
+                    test_user_permissions(conn)
             
-            elif choice == 3:
-                print("3")
+                case 4:
+                    print("¡Hasta luego!")
+                    break
             
-            elif choice == 4:
-                # Probar permisos
-                test_user_permissions(conn)
-            
-            elif choice == 5:
-                print("¡Hasta luego!")
-                break
-            
-            else:
-                print("Opción no válida. Inténtalo de nuevo.")
+                case _:
+                    print("Opción no válida. Inténtalo de nuevo.")
     
     except KeyboardInterrupt:
         print("\n\nPrograma interrumpido por el usuario.")
