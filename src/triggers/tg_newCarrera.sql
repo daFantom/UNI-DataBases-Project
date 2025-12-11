@@ -23,17 +23,21 @@ create or replace function fn_nuevaCarrera() returns trigger as $fn_nuevaCarrera
     --nada
     begin
         if TG_OP='INSERT' then
-            update puntos
-            set puntos_totales = puntos_totales + NEW.puntos
-            where piloto_ref == NEW.pilotoRef;
+            if(NEW.piloto_ref in (select piloto_ref from puntos)) then
+                update puntos
+                set puntos_totales = puntos_totales + NEW.puntos
+                where piloto_ref = NEW.pilotoRef;
+            else
+                insert into puntos(piloto_ref, puntos_totales) values (NEW.piloto_ref, NEW.puntos);
+            end if;
         elsif TG_OP='UPDATE' then
             update puntos
             set puntos_totales = puntos_totales + (NEW.puntos - OLD.puntos)
-            where piloto_ref == NEW.pilotoRef;
+            where piloto_ref = NEW.pilotoRef;
         elsif TG_OP='DELETE' then
             update puntos
-            set puntos_totales = puntos_totales - NEW.puntos
-            where piloto_ref == NEW.pilotoRef;
+            set puntos_totales = puntos_totales - OLD.puntos
+            where piloto_ref = OLD.pilotoRef;
         end if;
         return null;
     end
