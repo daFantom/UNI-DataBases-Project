@@ -1,75 +1,229 @@
 import sys
 import psycopg2
-import pytest
+import getpass  # Para ingresar contraseña de forma segura
 
-class portException(Exception): pass
+class PortException(Exception):
+    """Excepción personalizada para errores de puerto"""
+    pass
+
 
 def ask_port(msg):
     """
-        ask for a valid TCP port
-        ask_port :: String -> IO Integer | Exception
+    Solicita un puerto TCP válido
+    Args:
+        msg: Mensaje a mostrar al usuario
+    Returns:
+        int: Número de puerto válido
+    Raises:
+        PortException: Si el puerto no es válido
     """
-    try:                                                                        # try
-        answer  = input(msg)                                                    # pide el puerto
-        port    = int(answer)                                                   # convierte a entero
-        if (port < 1024) or (port > 65535):                                     # si el puerto no es valido
-            raise ValueError                                                    # lanza una excepción
-        else:
-            return port
-    except ValueError:     
-        raise portException                                                     # raise portException
-    #finally:                                                                    # finally
-    #    return port                                                             # return port
+    try:
+        answer = input(msg)
+        port = int(answer)
+        
+        # Validación del puerto
+        if port < 1024 or port > 65535:
+            raise PortException(f"El puerto {port} no está en el rango válido (1024-65535)")
+        
+        return port
+    except ValueError:
+        raise PortException("Por favor, introduce un número válido")
+    except PortException as e:
+        raise e
+
 
 def ask_conn_parameters():
     """
-        ask_conn_parameters:: () -> IO String
-        pide los parámetros de conexión
-        TODO: cada estudiante debe introducir los valores para su base de datos
+    Solicita los parámetros de conexión a la base de datos
+    Returns:
+        tuple: (host, port, user, password, database)
     """
-    host = 'localhost'                                                          # 
-    port = ask_port('TCP port number: ')                                        # pide un puerto TCP
-    user = input("Usuario: ")                                                   # TODO
-    password = str(input("Contraseña: "))                                       # TODO
-    database = 'f1_bbdd'                                                        # TODO
-    return (host, port, user,
-             password, database)
+    print("=== Parámetros de conexión a la base de datos ===")
+    
+    host = 'localhost'
+    
+    while True:
+        try:
+            port = ask_port('Puerto TCP [5432]: ') or 5432
+            break
+        except PortException as e:
+            print(f"Error: {e}. Inténtalo de nuevo.")
+    
+    user = input("Usuario: ").strip()
+    
+    # Usar getpass para ocultar la contraseña al escribir
+    password = getpass.getpass("Contraseña: ").strip()
+    
+    database = input("Base de datos [f1_bbdd]: ").strip() or 'f1_bbdd'
+    
+    return host, port, user, password, database
+
+
+def test_connection(conn_params):
+    """
+    Prueba la conexión a la base de datos
+    Args:
+        conn_params: Tupla con parámetros de conexión
+    Returns:
+        tuple: (bool, str, connection) - Éxito, mensaje, conexión
+    """
+    try:
+        host, port, user, password, database = conn_params
+        
+        connstring = (
+            f'host={host} '
+            f'port={port} '
+            f'user={user} '
+            f'password={password} '
+            f'dbname={database}'
+        )
+        
+        conn = psycopg2.connect(connstring)
+        return True, "¡Conexión exitosa!", conn
+    
+    except psycopg2.OperationalError as e:
+        return False, f"Error de conexión: {e}", None
+    except Exception as e:
+        return False, f"Error inesperado: {e}", None
+
+
+def execute_query(conn, query, params=None):
+    """
+    Ejecuta una consulta SQL
+    Args:
+        conn: Conexión a la base de datos
+        query: Consulta SQL
+        params: Parámetros para la consulta (opcional)
+    Returns:
+        list: Resultados de la consulta
+    """
+    try:
+        with conn.cursor() as cur:
+            if params:
+                cur.execute(query, params)
+            else:
+                cur.execute(query)
+            
+            # Si es una consulta SELECT, devolver resultados
+            if query.strip().upper().startswith('SELECT'):
+                results = cur.fetchall()
+                return results
+            else:
+                conn.commit()
+                return cur.rowcount  # Número de filas afectadas
+    except Exception as e:
+        conn.rollback()
+        raise e
+
+
+def display_menu():
+    """
+    Muestra el menú de opciones
+    """
+    print("\n=== MENÚ PRINCIPAL ===============")
+    print("1. Ejecutar consultas de la Parte 1")
+    print("2. Insertar un nuevo gran premio y mostrar sus resultados")
+    print("3. Probar permisos")
+    print("4. Salir")
+    print("====================================")
+
+
+def get_user_choice():
+    """
+    Obtiene la opción seleccionada por el usuario
+    """
+    try:
+        choice = input("Selecciona una opción (1-5): ").strip()
+        return int(choice)
+    except ValueError:
+        return 0
+
+
+def test_user_permissions(conn):
+    """
+    Prueba los permisos del usuario conectado
+    """
+    print("\n=== Prueba de permisos ===")
+    
+    tests = [
+        ("SELECT", "SELECT * FROM information_schema.tables LIMIT 1;"),
+        ("INSERT", "INSERT INTO prueba_permisos VALUES (1) -- Asumiendo tabla prueba_permisos;"),
+        ("CREATE", "CREATE TABLE prueba_permisos_temp (id INT);"),
+        ("DROP", "DROP TABLE IF EXISTS prueba_permisos_temp;"),
+    ]
+    
+    for perm_type, query in tests:
+        try:
+            with conn.cursor() as cur:
+                cur.execute(query)
+                if perm_type == "SELECT":
+                    cur.fetchone()  # Consumir resultado
+                print(f"✓ Permiso {perm_type}: OK")
+        except Exception as e:
+            print(f"✗ Permiso {perm_type}: DENEGADO - {str(e).split('ERROR:')[1] if 'ERROR:' in str(e) else str(e)}")
+    
+    print("==========================")
+
 
 def main():
     """
-        main :: () -> IO None
+    Función principal del programa
     """
     try:
-        (host, port, user, password, database) = ask_conn_parameters()          #
-        print(f"Conectando a {host}:{port} como {user}...")
-        connstring = f'host={host} port={port} user={user} password={password} dbname={database}' 
-        conn    = psycopg2.connect(connstring)                                                                      
-        print("¡Conexión exitosa!")
-        cur     = conn.cursor()                                                 # instacia un cursor
-        query   = 'SELECT * FROM pl1_final.results_final;'                                       # prepara una consulta
-        cur.execute(query)                                                      # ejecuta la consulta
-        for record in cur.fetchall():                                           # fetchall devuelve todas las filas de la consulta
-            print(record)                                                       # imprime las filas
-        cur.close                                                               # cierra el cursor
-        conn.close                                                              # cierra la conexion
-    except portException:
-        print("The port is not valid!")
-    except KeyboardInterrupt:
-        print("Program interrupted by user.")
-    except psycopg2.OperationalError:
-        print("Error operacional de psycop2")
-    except UnicodeDecodeError:
-        print("Error de codificación")
+        print("=== Conexión a Base de Datos Fórmula 1 ===")
+        
+        # Obtener parámetros de conexión
+        conn_params = ask_conn_parameters()
+        
+        # Probar conexión
+        success, message, conn = test_connection(conn_params)
+        print(f"\n{message}")
+        
+        if not success:
+            return
+        
+        # Menú principal
+        while True:
+            display_menu()
+            choice = get_user_choice()
+            
+            if choice == 1:
+                print("1")
+            
+            elif choice == 2:
+                print("2")
+            
+            elif choice == 3:
+                print("3")
+            
+            elif choice == 4:
+                # Probar permisos
+                test_user_permissions(conn)
+            
+            elif choice == 5:
+                print("¡Hasta luego!")
+                break
+            
+            else:
+                print("Opción no válida. Inténtalo de nuevo.")
     
+    except KeyboardInterrupt:
+        print("\n\nPrograma interrumpido por el usuario.")
+    except Exception as e:
+        print(f"\nError inesperado: {e}")
     finally:
-        print("Program finished")
+        # Cerrar conexión si existe
+        if 'conn' in locals() and conn:
+            conn.close()
+            print("Conexión cerrada.")
+        print("Programa finalizado.")
 
-#def prueba_conexion():
 
-
-if __name__ == "__main__":                                                      # Es el modula principal?
-    if '--test' in sys.argv:                                                    # chequea el argumento cmdline buscando el modo test
-        import doctest                                                          # importa la libreria doctest
-        doctest.testmod()                                                       # corre los tests
-    else:                                                                       # else
-        main()                                                                  # ejecuta el programa principal
+if __name__ == "__main__":
+    # Verificar si estamos en modo prueba
+    if '--test' in sys.argv:
+        print("Modo prueba activado")
+        # Aquí podrías añadir pruebas unitarias con pytest
+        # pytest.main([__file__])
+    else:
+        main()
