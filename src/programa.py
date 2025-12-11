@@ -148,7 +148,7 @@ def get_user_choice():
     Obtiene la opción seleccionada por el usuario
     """
     try:
-        choice = input("Selecciona una opción (1-5): ").strip()
+        choice = input("Selecciona una opción (de las disponibles): ").strip()
         return int(choice)
     except ValueError:
         return 0
@@ -179,6 +179,206 @@ def test_user_permissions(conn):
     
     print("==========================")
 
+def do_query(conn, query_num):
+    """
+    Ejecuta una consulta específica según el número
+    """
+    queries = {
+        1: """
+            SELECT
+                c.name AS nombreGP,
+                COUNT(gp.name) as numero_de_grandes_premios
+            FROM
+                pl1_final.circuits_final c 
+                JOIN pl1_final.races_final gp ON c.circuitRef = gp.circuitRef
+            GROUP BY 
+                nombreGP
+            ORDER BY  
+                numero_de_grandes_premios DESC;
+        """,
+        
+        2: """
+            SELECT
+                p.forename AS nombre,
+                p.surname AS apellidos,
+                COUNT(r.gpRef) AS num_carreras_totales,
+                SUM(r.puntos) AS suma_puntos_totales
+            FROM
+                pl1_final.drivers_final AS p 
+                JOIN pl1_final.results_final AS r ON p.driverRef = r.pilotoRef
+            WHERE
+                p.forename = 'Ayrton' AND p.surname = 'Senna'
+            GROUP BY
+                nombre, apellidos;
+        """,
+        
+        3: """
+            SELECT
+                p.forename AS nombre,
+                p.surname AS apellidos,
+                COUNT(r.gpRef) AS num_carreras,
+                p.dob AS cumple
+            FROM
+                pl1_final.drivers_final AS p 
+                JOIN pl1_final.results_final AS r ON p.driverRef = r.pilotoRef
+            WHERE
+                p.dob > '1999-12-31'
+            GROUP BY
+                nombre, apellidos, cumple
+            ORDER BY
+                cumple ASC;
+        """,
+        
+        4: """
+            SELECT
+                e.name AS nombre_escu,
+                COUNT(r.gpRef) AS num_carreras
+            FROM
+                pl1_final.constructors_final AS e 
+                JOIN pl1_final.results_final AS r ON e.constructorRef = r.escuderiaRef
+            WHERE
+                e.nationality = 'Spanish' OR e.nationality = 'Italian'
+            GROUP BY
+                nombre_escu
+            ORDER BY
+                nombre_escu;
+        """,
+        
+        5: """
+            CREATE OR REPLACE VIEW puntos_por_temporada AS
+            SELECT
+                rf.year AS anno,
+                d.driverRef AS referencia,
+                SUM(rf.puntos) AS puntos_totales
+            FROM 
+                pl1_final.results_final rf 
+                JOIN pl1_final.drivers_final d ON rf.pilotoRef = d.driverRef
+            GROUP BY 
+                anno, referencia;
+            
+            SELECT * FROM puntos_por_temporada ORDER BY anno ASC, puntos_totales DESC;
+        """,
+        
+        6: """
+            SELECT
+                *
+            FROM
+                puntos_por_temporada p1
+            WHERE 
+                anno >= 2010 AND anno <= 2015
+                AND p1.puntos_totales = (
+                    SELECT MAX(p2.puntos_totales)
+                    FROM puntos_por_temporada p2
+                    WHERE p2.anno = p1.anno
+                )
+            ORDER BY
+                anno ASC;
+        """,
+        
+        7: """
+            SELECT
+                p.forename AS nombre_piloto,
+                p.surname AS apellido_piloto
+            FROM
+                pl1_final.results_final AS r 
+                JOIN pl1_final.drivers_final AS p ON r.pilotoRef = p.driverRef
+            WHERE
+                r.posicion = 1
+            GROUP BY
+                p.driverRef, nombre_piloto, apellido_piloto
+            ORDER BY
+                nombre_piloto ASC;
+        """,
+        
+        8: """
+            SELECT
+                cir.country,
+                COUNT(gp.name) as numero_gp
+            FROM
+                pl1_final.races_final AS gp 
+                JOIN pl1_final.circuits_final AS cir ON gp.circuitRef = cir.circuitRef
+            GROUP BY
+                cir.country
+            ORDER BY
+                COUNT(gp.name) DESC;
+        """,
+        
+        9: """
+            SELECT
+                p.forename AS nombre,
+                p.surname AS apellidos,
+                v.time AS tiempo_vuelta
+            FROM
+                pl1_final.drivers_final AS p 
+                JOIN pl1_final.lap_times_final AS v ON p.driverRef = v.driverRef
+            WHERE
+                v.time = (
+                    SELECT MIN(time) FROM pl1_final.lap_times_final
+                )
+            GROUP BY
+                nombre, apellidos, tiempo_vuelta;
+        """,
+        
+        10: """
+            SELECT
+                p.forename AS nombre_piloto,
+                p.surname AS apellidos_piloto,
+                COUNT(ps.driverRef) as paradas_boxes
+            FROM
+                pl1_final.pit_stops_final AS ps 
+                JOIN pl1_final.drivers_final AS p ON ps.driverRef = p.driverRef
+            WHERE
+                ps.raceRef = 'Monaco Grand Prix' AND ps.year = 2023
+            GROUP BY
+                nombre_piloto, apellidos_piloto
+            ORDER BY
+                paradas_boxes DESC;
+        """,
+        
+        11: """
+            SELECT
+                p.driverRef AS referencia_piloto,
+                p.forename AS nombre,
+                p.surname AS apellido,
+                COUNT(r.gpRef) AS cant_GP
+            FROM
+                pl1_final.results_final AS r 
+                JOIN pl1_final.drivers_final AS p ON r.pilotoRef = p.driverRef
+            GROUP BY
+                referencia_piloto, nombre, apellido
+            HAVING
+                COUNT(r.gpRef) > 100
+            ORDER BY
+                cant_GP DESC;
+        """
+    }
+    
+    if query_num in queries:
+        try:
+            query = queries[query_num]
+            
+            # Ejecutar la consulta
+            results = execute_query(conn, query)
+            
+            # Mostrar resultados
+            if isinstance(results, list):
+                if results:
+                    print(f"\nResultados de la consulta {query_num}:")
+                    print("-" * 50)
+                    # Determinar el ancho de columna para mejor formato
+                    for row in results:
+                        print(row)
+                    print(f"\nTotal de filas: {len(results)}")
+                else:
+                    print("No se encontraron resultados.")
+            else:
+                print(f"Consulta ejecutada exitosamente. Filas afectadas: {results}")
+                
+        except Exception as e:
+            print(f"Error al ejecutar la consulta {query_num}: {e}")
+    else:
+        print("Número de consulta no válido.")
+    
 
 def main():
     """
@@ -204,7 +404,11 @@ def main():
             match choice:
                 case 1:
                     display_opt1()
-                    choice = get_user_choice()
+                    sub_choice = get_user_choice()
+                    if 1 <= sub_choice <= 11:
+                        do_query(conn, sub_choice)
+                    else:
+                        print("Opción no válida.")
             
                 case 2:
                     print("2")
